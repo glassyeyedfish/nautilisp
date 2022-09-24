@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/wil/Development/nautilisp",
+            "binaryPath": "/home/wil/Development/nautilisp/nautilisp",
+            "binaryArgs": []
+        }
+    ]
+}
