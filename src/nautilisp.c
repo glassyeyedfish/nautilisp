@@ -5,30 +5,51 @@
 #include <editline/history.h>
 
 #include "mpc/mpc.h"
+#include "lval.h"
 
-long
-eval_op(long x, char* op, long y) {
-        if (strcmp(op, "+") == 0) { 
-                return x + y; 
-        } else if (strcmp(op, "-") == 0) { 
-                return x - y; 
-        } else if (strcmp(op, "*") == 0) { 
-                return x * y; 
-        } else if (strcmp(op, "/") == 0) { 
-                return x / y; 
+/* Helper function for eval() which evaluates an op. */
+lval
+eval_op(lval x, char* op, lval y) {
+        /* Abort if already hit an error. */
+        if (x.type == LVAL_ERR) { 
+                return x; 
+        } 
+        if (y.type == LVAL_ERR) { 
+                return y; 
         }
-        return 0;
+
+        /* Eval that sucker. */
+        if (strcmp(op, "+") == 0) { 
+                return lval_num(x.num + y.num); 
+        } 
+        if (strcmp(op, "-") == 0) { 
+                return lval_num(x.num - y.num); 
+        } 
+        if (strcmp(op, "*") == 0) { 
+                return lval_num(x.num * y.num); 
+        } 
+        if (strcmp(op, "/") == 0) { 
+                return y.num == 0
+                        ? lval_err(LERR_DIV_ZERO)
+                        : lval_num(x.num / y.num); 
+        }
+
+        return lval_err(LERR_BAD_OP);
 }
 
-long
+/* Evaluate an AST. */
+lval
 eval(mpc_ast_t* t) {
         char* op;
-        long x;
+        lval x;
         int i;
 
         /* Base case: we hit a number, so return it! */
         if (strstr(t->tag, "number")) {
-                return atoi(t->contents);
+                long x;
+                errno = 0;
+                x = strtol(t->contents, NULL, 10);
+                return errno != ERANGE ? lval_num(x) : lval_err(LERR_BAD_NUM);
         }
 
         /* Recursive case: we hit an expression. */
@@ -45,7 +66,7 @@ eval(mpc_ast_t* t) {
 }
 
 int 
-main(int argc, char** argv) {
+main(void) {
 
     /* Create Some Parsers */
         mpc_parser_t* number_parser   = mpc_new("number");
@@ -78,8 +99,8 @@ main(int argc, char** argv) {
 
                 /* Try to parse it. */
                 if (mpc_parse("<stdin>", input, lisp_parser, &r)) {
-                        long result = eval(r.output);
-                        printf("%li\n", result);
+                        lval result = eval(r.output);
+                        lval_println(result);
                         mpc_ast_delete(r.output);
                 } else {
                         mpc_err_print(r.error);

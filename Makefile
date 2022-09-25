@@ -1,5 +1,5 @@
 nautilisp:
-	cc -ansi -pedantic -Werror -Wall \
-	nautilisp.c mpc/mpc.c \
+	cc -ansi -pedantic -Werror -Wall -Wextra \
+	src/*.c src/mpc/mpc.c \
 	-ledit -lm \
 	-o build/nautilisp
