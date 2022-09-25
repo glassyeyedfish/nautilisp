@@ -68,21 +68,27 @@ eval(mpc_ast_t* t) {
 int 
 main(void) {
 
-    /* Create Some Parsers */
+        /* Create Some Parsers */
         mpc_parser_t* number_parser   = mpc_new("number");
-        mpc_parser_t* operator_parser = mpc_new("operator");
+        mpc_parser_t* symbol_parser   = mpc_new("symbol");
+        mpc_parser_t* sexpr_parser    = mpc_new("sexpr");
         mpc_parser_t* expr_parser     = mpc_new("expr");
         mpc_parser_t* lisp_parser     = mpc_new("lisp");
         
         /* Define them with the following Language */
-        mpca_lang(MPCA_LANG_DEFAULT,
-                "                                                   \
-                number   : /-?[0-9]+/ ;                             \
-                operator : '+' | '-' | '*' | '/' ;                  \
-                expr     : <number> | '(' <operator> <expr>+ ')' ;  \
-                lisp     : /^/ <operator> <expr>+ /$/ ;             \
-                ",
-                number_parser, operator_parser, expr_parser, lisp_parser);
+        mpca_lang(
+                MPCA_LANG_DEFAULT,
+                "                                        \
+                number : /-?[0-9]+/ ;                    \
+                symbol : '+' | '-' | '*' | '/' ;         \
+                sexpr  : '(' <expr>* ')' ;               \
+                expr   : <number> | <symbol> | <sexpr> ; \
+                lisp   : /^/ <expr>* /$/ ;               ",
+                number_parser, 
+                symbol_parser, 
+                sexpr_parser, 
+                expr_parser, 
+                lisp_parser);
 
         /* REPL */
         puts("Nautilisp v0.7");
@@ -111,9 +117,10 @@ main(void) {
         }
 
         mpc_cleanup(
-                4, 
+                5, 
                 number_parser, 
-                operator_parser, 
+                symbol_parser, 
+                sexpr_parser, 
                 expr_parser, 
                 lisp_parser);
 
