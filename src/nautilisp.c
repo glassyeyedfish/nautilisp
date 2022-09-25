@@ -91,7 +91,7 @@ main(void) {
                 lisp_parser);
 
         /* REPL */
-        puts("Nautilisp v0.7");
+        puts("Nautilisp v0.9");
         puts("Press Ctrl+C to quit.");
 
         while(1) {
